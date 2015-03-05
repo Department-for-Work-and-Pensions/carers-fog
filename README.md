@@ -20,8 +20,13 @@ The password has to be left blank in the .fog file and supplied when the credent
 The scripts get config data from /etc/carers-fog.conf:
 
   WIKI_CAL=
+  
   VDC_IL2=
+  
   VAPP_IL2=
+  
   VDC_IL3=
+  
   VAPP_IL3=
+  
   FOG_USER=
