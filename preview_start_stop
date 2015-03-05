@@ -1,0 +1,47 @@
+#!/bin/sh
+
+USAGE='preview_start_stop {IL2|IL3} {start|stop}'
+if [ $# -ne 2 ]; then
+  echo ${USAGE}
+  exit -1
+fi
+
+VALID_ZONES="{IL2|IL3}"
+
+if [[ ${VALID_ZONES} =~ ${1} ]]; then
+  ZONE=${1}
+else
+  echo ${USAGE}
+  exit -2
+fi
+
+VALID_ACTION="{start|stop}"
+
+if [[ ${VALID_ACTION} =~ ${2} ]]; then
+  START_STOP=${2}
+else
+  echo ${USAGE}
+  exit -3
+fi
+
+HOME_DIR=`dirname $0`
+
+source /etc/carers-fog.conf
+
+CALC_VAR="export VDC_NAME=\${VDC_${ZONE}}"
+eval ${CALC_VAR}
+
+CALC_VAR="export VAPP_ID=\${VAPP_${ZONE}}"
+eval ${CALC_VAR}
+
+if [ "${START_STOP}" = "start" ]; then
+  echo "Starting ${ZONE}"
+else
+  echo "Stopping ${ZONE}"
+fi
+
+MY_CRED=`/root/bin/spookywooky|FOG_CREDENTIAL=test_credentials vcloud-login`
+echo "My Cred: ${MY_CRED}"
+eval ${MY_CRED}
+echo "vCloud token: ${FOG_VCLOUD_TOKEN}"
+${HOME_DIR}/preview_start_stop.rb "${FOG_USER}" "${START_STOP}" "${VDC_NAME}" "${VAPP_ID}"

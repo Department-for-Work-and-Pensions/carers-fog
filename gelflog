@@ -1,0 +1,64 @@
+# This script can be used to raise a graylog2/gelf message
+# gzip it and send it to a graylog server using netcat (nc)
+
+USAGE="Usage: `basename $0` {grayloghost} {hostname} {short message} {full message} {level} {facility} {env name} {app name}"
+
+if [ "$#" -ne "8" ]; then
+  echo ${USAGE}
+  exit
+fi
+
+grayloghost=${1}
+hostname=${2}
+short_message=${3}
+full_message=${4}
+level=${5}
+facility=${6}
+# gnu date (for testing on a Mac)
+# date=$(gdate +'%s.%N')
+date=$(date +'%s.%N')
+env_name=${7}
+app_name=${8}
+
+# Read the message into the variable ${gelf_message}
+# see http://graylog2.org/gelf for mor info
+
+read -r -d '' gelf_message <<EOF
+{
+  "version": "1.0",
+  "host": "${hostname}",
+  "short_message": "${short_message}",
+  "full_message": "${full_message}",
+  "timestamp": ${date},
+  "level": ${level},
+  "facility": "${facility}",
+  "_user_id": 42,
+  "_Environment": "${env_name}",
+  "_AppName": "${app_name}"
+}
+EOF
+
+
+echo Plain
+echo -----
+echo -n "${gelf_message}"
+echo ==============
+echo
+echo
+
+
+echo Gzipped and Gunzipped
+echo ---------------------
+echo -n "${gelf_message}"| gzip -c -f - | gunzip -c -
+echo ==============
+echo
+echo
+
+
+echo Send
+echo ----
+echo  "${gelf_message}| gzip -c -f - | nc -w 1 -u ${grayloghost} 12201"
+echo  "${gelf_message}"| gzip -c -f - | nc -w 1 -u ${grayloghost} 12201
+echo ==============
+echo
+echo
